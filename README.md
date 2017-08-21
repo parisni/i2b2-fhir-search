@@ -21,6 +21,8 @@ This demo retrieves patientSet, encounterSet or instanceSet from a remote FHIR A
 ## Use
 
 ```java
+//configure the FHIR host
+configFhirApi = new ConfigFhirApi("http://fhirtest.uhn.ca/baseDstu3/");
 //configurate the query (the resource type, the pagination, and the the query string)
 ConfigFhirQuery configFhirQuery = new ConfigFhirQuery("Encounter", 500, "date=gt2014-05-28&date=lt2014-05-28");
 //choose what kind of result you want (Here an encounterSet)
