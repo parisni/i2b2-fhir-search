@@ -2,7 +2,7 @@
 
 ## Goal
 
-This demo retrieves patientSet, encounterSet or instanceSet from a remote FHIR API. Here the HAPI FHIR demo web service is used for testing. In the future, an hapi FHIR instance is supposed to be plugged on top of any other datawarehouse, live EMR and so on
+This demo retrieves patientSet, encounterSet, instanceSet or dateSet from a remote FHIR API. Here the HAPI FHIR demo web service is used for testing. In the future, an hapi FHIR instance is supposed to be plugged on top of any other datawarehouse, live EMR and so on
 
 ## Feature
 
@@ -10,33 +10,46 @@ This demo retrieves patientSet, encounterSet or instanceSet from a remote FHIR A
 - can configure the resource fields
 - can configure the number of pagination
 - loop over the pagination to get all results
-- 3 kind of resources: Patient, Encounter, Fact
 - Fact represents Observation, Medication, ... and so on
 - does not store the full result in memory; but each pagination instead
-- result can be a patientSet[Patient, Encounter, Fact], encounterSet[Encounter, Fact], or instanceSet[Fact only]
 - the query needs to be pass as a string
 - the way to retrieve the fields (patient/encounter/fact ids), is done by jsonPath, and is configurable by the client.
 - warns when a field (eg: enconter in Observation) is not present in a resource
+- compatible FHIR v3; easy to make it compatible with future version
+- compatible with standard resources & profiled resources
+- only retrieves fields for sets (not the full resource)
 
 ## Use
 
+This uses the Builder design pattern :
+
 ```java
-//configure the FHIR host
-configFhirApi = new ConfigFhirApi("http://fhirtest.uhn.ca/baseDstu3/");
-//configurate the query (the resource type, the pagination, and the the query string)
-ConfigFhirQuery configFhirQuery = new ConfigFhirQuery("Encounter", 500, "date=gt2014-05-28&date=lt2014-05-28");
-//choose what kind of result you want (Here an encounterSet)
-ConfigFhirResult configFhirResult = new ConfigFhirResult("encounterSet", "$.resource.subject.reference", "$.resource.id");
-//get the result
-EncounterResourceFhir a = new EncounterResourceFhir(configFhirApi, configFhirQuery, configFhirResult);
-a.collectResult();
-//returns the patient id list
-System.out.println(a.getPatientList());
-//returns the encounter id list
-System.out.println(a.getEncounterList());
+import fr.aphp.wind.i2b2fhir.*
+
+FhirProfiledResource prf = new FhirProfiledResourceBuilder()
+.withFhirApiHost("http://fhirtest.uhn.ca/baseDstu3/")//Required ; from i2b2 hive configuration?
+.withFhirDstuVersion(3)//Optionnal, 3 is default
+.withFhirProxyHost("my.proxy")//Optionnal
+.withFhirProxyPort(myport)//Optionnal
+.withResourceName("Observation")// Required
+.withProfileResourceName("Observation")//Optionnal - if using a profiled resource
+.withFhirSearchQuery("code=29463-7&value-quantity=21")//
+.withI2b2SetType("dateSet")//one of [patientSet, encounterSet, instanceSet, dateSet]
+.build();
+prf.collectResult();
+
+System.out.println(String.format("[Observation] %s", prf.toCsv()));//produce a csv to be loaded into i2b2 temporary table on the fly
+
+I2b2SetList myResultSet = prf.getI2b2SetList(); //produce an array list
+for( I2b2Set encSet : myResultSet){//iterate over the result set
+	System.out.println(encSet.getPatientUri());
+	System.out.println(encSet.getEncounterUri());
+
+}
 ```
 
-## install
+
+## Install
 
 - mvn clean install
 - import in eclipse as maven project
@@ -44,7 +57,10 @@ System.out.println(a.getEncounterList());
 
 ## test
 
-- configure the proxy in config.properties file (if no using just put useProxy to false)
 - mvn test
 
 
+## TODO
+
+- Exceptions
+- date formating
