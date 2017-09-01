@@ -48,6 +48,9 @@ for( I2b2Set encSet : myResultSet){//iterate over the result set
 }
 ```
 
+## Pakage
+
+- mvn assembly:single -DdescriptorId=jar-with-dependencies
 
 ## Install
 

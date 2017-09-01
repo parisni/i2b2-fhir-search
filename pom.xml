@@ -7,6 +7,18 @@
   <version>1.0-SNAPSHOT</version>
   <name>i2b2-fhir-search</name>
   <url>http://maven.apache.org</url>
+  <build>
+	  <plugins>
+		  <plugin>
+			  <artifactId>maven-assembly-plugin</artifactId>
+			  <configuration>
+				  <descriptorRefs>
+					  <descriptorRef>jar-with-dependencies</descriptorRef>
+				  </descriptorRefs>
+			  </configuration>
+		  </plugin>
+	  </plugins>
+  </build>
   <dependencies>
     <dependency>
       <groupId>junit</groupId>
