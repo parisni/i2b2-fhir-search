@@ -53,31 +53,30 @@ for( I2b2Set encSet : myResultSet){//iterate over the result set
 ## Example
 
 ```java
-		Date date = null;
-		DateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
-		try {
-		   date =  formatter.parse("2014-05-28");
-		} catch (ParseException e) {
-		  e.printStackTrace();
-		}
-		FhirProfiledResource prf = new FhirProfiledResourceBuilder()
-				.withFhirApiHost("http://fhirtest.uhn.ca/baseDstu3/")
-				.withFhirDstuVersion(3)
-				.withProfileResourceName("Encounter")
-				.withResourceName("Encounter")
-			    .withFhirSearchQuery("status=finished")
-				.withHappensBeforeDate(date)
-				.withHappensAfterDate(date)
-				.withI2b2SetType("encounterSet")
-				.build();
-		prf.collectResult();
+Date date = null;
+DateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
+try {
+	date =  formatter.parse("2014-05-28");
+} catch (ParseException e) {
+	e.printStackTrace();
+}
+FhirProfiledResource prf = new FhirProfiledResourceBuilder()
+	.withFhirApiHost("http://fhirtest.uhn.ca/baseDstu3/")
+        .withFhirDstuVersion(3)
+	.withProfileResourceName("Encounter")
+	.withResourceName("Encounter")
+	.withFhirSearchQuery("status=finished")
+	.withHappensBeforeDate(date)
+        .withHappensAfterDate(date)
+	.withI2b2SetType("encounterSet")
+	.build();
+prf.collectResult();
 
-		logger.info(String.format("[Encounter] %s", prf.toCsv()));
-		for( I2b2Set encSet : prf.getI2b2SetList()){
-            System.out.println(encSet.getPatientUri());
-            System.out.println(encSet.getEncounterUri());
-
-    }
+logger.info(String.format("[Encounter] %s", prf.toCsv()));
+for( I2b2Set encSet : prf.getI2b2SetList()){
+	System.out.println(encSet.getPatientUri());
+	System.out.println(encSet.getEncounterUri());
+}
 //2017-09-09 09:16:25 INFO FhirProfiledResource:207 - FHIR query: http://fhirtest.uhn.ca/baseDstu3/Encounter?&_element=subject,identifier&status=finished&date=lt2014-05-28T00:00:00.000+02:00&date=gt2014-05-28T00:00:00.000+02:00&_count=500&_pretty=false
 //77274
 //77302
