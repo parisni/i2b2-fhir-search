@@ -32,7 +32,7 @@ FhirProfiledResource prf = new FhirProfiledResourceBuilder()
 .withFhirProxyHost("my.proxy")//Optionnal
 .withFhirProxyPort(myport)//Optionnal
 .withResourceName("Observation")// Required
-.withProfileResourceName("Observation")//Optionnal - if using a profiled resource
+.withProfileResourceName("ObservationAphp")//Optionnal - if using a profiled resource
 .withFhirSearchQuery("code=29463-7&value-quantity=21")//
 .withI2b2SetType("dateSet")//one of [patientSet, encounterSet, instanceSet, dateSet]
 .build();
@@ -48,7 +48,7 @@ for( I2b2Set encSet : myResultSet){//iterate over the result set
 }
 ```
 
-## Pakage
+## Pakage:
 
 - mvn assembly:single -DdescriptorId=jar-with-dependencies
 
