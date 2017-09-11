@@ -41,6 +41,8 @@ import edu.harvard.i2b2.crc.datavo.i2b2message.ResponseHeaderType;
 import edu.harvard.i2b2.crc.datavo.i2b2message.ResponseMessageType;
 import edu.harvard.i2b2.crc.datavo.i2b2message.SecurityType;
 import edu.harvard.i2b2.crc.datavo.i2b2message.StatusType;
+import edu.harvard.i2b2.crc.datavo.pm.CellDataType;
+import edu.harvard.i2b2.crc.datavo.pm.CellDatasType;
 import edu.harvard.i2b2.crc.datavo.pm.ConfigureType;
 import edu.harvard.i2b2.crc.datavo.pm.GetUserConfigurationType;
 import edu.harvard.i2b2.crc.datavo.pm.ObjectFactory;
@@ -60,7 +62,7 @@ public class CallPMUtil {
 		try {
 			requestElement = buildOMElement(requestMessageType);
 			log.debug("CRC PM call's request xml " + requestElement);
-			 response = ServiceClient.sendREST(QueryProcessorUtil.getInstance()
+			response = ServiceClient.sendREST(QueryProcessorUtil.getInstance()
 					.getProjectManagementCellUrl(), requestElement);
 			log.debug("Got Response");
 		} catch (XMLStreamException e) {
@@ -148,6 +150,73 @@ public class CallPMUtil {
 
 		return projectType;
 	}
+
+
+
+	public static ConfigureType getUserConfigureFromResponse(String responseXml)
+			throws JAXBUtilException, I2B2Exception {
+		JAXBElement responseJaxb = jaxbUtil.unMashallFromString(responseXml);
+
+		//CRCJAXBUtil.getJAXBUtil().unMashallFromString(responseXml);
+		ResponseMessageType pmRespMessageType = (ResponseMessageType) responseJaxb
+				.getValue();
+		log.debug("CRC's PM call response xml" + responseXml);
+
+		ResponseHeaderType responseHeader = pmRespMessageType
+				.getResponseHeader();
+		StatusType status = responseHeader.getResultStatus().getStatus();
+		String procStatus = status.getType();
+		String procMessage = status.getValue();
+
+		if (procStatus.equals("ERROR")) {
+			log.error("PM Error reported by CRC web Service " + procMessage);
+			log.error("CRC's PM call response xml" + responseXml);
+			throw new I2B2Exception("PM Error reported by CRC web Service "
+					+ procMessage);
+		} else if (procStatus.equals("WARNING")) {
+			log.info("PM Warning reported by CRC web Service" + procMessage);
+			throw new I2B2Exception("PM Warning reported by CRC web Service"
+					+ procMessage);
+		}
+
+		JAXBUnWrapHelper helper = new JAXBUnWrapHelper();
+		ConfigureType configureType = (ConfigureType) helper.getObjectByClass(
+				pmRespMessageType.getMessageBody().getAny(),
+				ConfigureType.class);
+
+
+		return configureType;
+	}
+
+    public static CellDataType getCellForProject(CellDatasType cellDatas, String cell) throws I2B2Exception, JAXBUtilException {
+
+            log.debug("Returning ProjectType");
+            for (CellDataType cellData:  cellDatas.getCellData()) {
+                    if (cellData.getId().equalsIgnoreCase(cell))
+                            return cellData;
+            }
+            return null;
+    }
+
+	public static ConfigureType getUserConfigure(SecurityType securityType, String childPMUrl, String childDomain,
+			String projectId, String cell) throws I2B2Exception, JAXBUtilException {
+		RequestMessageType requestMessageType = getI2B2RequestMessage(securityType, projectId);
+		OMElement requestElement = null;
+		String response =  null;
+		try {
+			requestElement = buildOMElement(requestMessageType);
+			response = ServiceClient.sendREST(childPMUrl, requestElement);
+		} catch (XMLStreamException e) {
+			e.printStackTrace();
+			throw new I2B2Exception("" + StackTraceUtil.getStackTrace(e));
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new I2B2Exception("" + StackTraceUtil.getStackTrace(e));
+		} 
+
+		return   getUserConfigureFromResponse(response);
+	}
+
 
 	private static OMElement buildOMElement(RequestMessageType requestMessageType)
 			throws XMLStreamException, JAXBUtilException {

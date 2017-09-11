@@ -79,7 +79,9 @@ public class TemporalQuery {
 	private String lastSubQueryId = null;
 	private List<String> preProcessingSql = null;
 	private List<String> postProcessingSql = null;
-	
+    private String queryInstanceId = null;
+    private int resultTimeout = 0;
+
 
 	/**
 	 * Constructor
@@ -760,6 +762,24 @@ public class TemporalQuery {
 		return ((this.getQueryOptions().getQueryConstraintLogic()==QueryConstraintStrategy.TEMP_TABLES) &&
 				(this.getServerType().equalsIgnoreCase(DAOFactoryHelper.SQLSERVER)));
 	}
+
+    public String getQueryInstanceId() {
+        // TODO Auto-generated method stub
+        return queryInstanceId;
+}
+
+public String getQueryName(){
+        return this.queryDef.getQueryName();
+}
+
+public int getResultTimeout(){
+        return this.resultTimeout;
+}
+
+public void setResultTimeout(int timeout){
+        this.resultTimeout = timeout;
+}
+
 
 }
 

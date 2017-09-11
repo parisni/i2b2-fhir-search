@@ -84,6 +84,17 @@ public abstract class TemporalPanelItem {
 	protected XmlValueType metaDataXml = null;
 	protected String factTable = "observation_fact";
 	
+    protected boolean isFHIR = false;
+
+    public void setFHIR(boolean isFHIR) {
+            this.isFHIR = isFHIR;
+    }
+
+    public boolean isFHIR() {
+            return isFHIR;
+    }
+
+
 	/**
 	 * Constructor
 	 * 
