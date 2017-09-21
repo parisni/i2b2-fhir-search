@@ -165,7 +165,7 @@ public class FhirProfiledResource {
 	}
 
 	private String getElementQuery() {
-		String str = "&_element=";
+		String str = "_elements=";
 		if (this.i2b2SetType.equals("patientSet")) {
 			str += this.configFhirResource.getPatientUriField();
 		} else if (this.i2b2SetType.equals("encounterSet")) {
@@ -206,7 +206,7 @@ public class FhirProfiledResource {
 		while (hasResult) {
 			logger.info(String.format("FHIR query: %s", query));
 
-			String jsonResultString = Unirest.get(query).asString().getBody().toString();
+			String jsonResultString = Unirest.get(query).header("accept", "application/json").header("Content-Type", "application/json").asString().getBody().toString();
 			JSONArray entries = JsonPath.read(jsonResultString, "$.entry");
 			for (Object entry : entries) {
 				entriesNumber++;

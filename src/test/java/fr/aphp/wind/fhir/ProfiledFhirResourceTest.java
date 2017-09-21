@@ -42,13 +42,34 @@ public class ProfiledFhirResourceTest extends TestCase {
 		return new TestSuite(ProfiledFhirResourceTest.class);
 	}
 
+//	public void testPatient() throws UnirestException, FileNotFoundException, IOException {
+//		FhirProfiledResource prf = new FhirProfiledResourceBuilder()
+//				.withFhirApiHost("http://fhirtest.uhn.ca/baseDstu3/")
+//				.withFhirDstuVersion(3)
+//				.withProfileResourceName("Patient")
+//				.withResourceName("Patient")
+//				.withFhirSearchQuery("birthdate=1974-12-24")
+//				.withI2b2SetType("patientSet")
+//				.build();
+//		prf.collectResult();
+//
+//		logger.info(String.format("[Patient] %s", prf.toCsv()));
+//		I2b2SetList a = prf.getI2b2SetList();
+//		for( I2b2Set t : a){
+//			logger.error(t.getPatientUri());
+//			
+//		}
+//	}
 	public void testPatient() throws UnirestException, FileNotFoundException, IOException {
+		
+		long startTime = System.nanoTime();
+
 		FhirProfiledResource prf = new FhirProfiledResourceBuilder()
-				.withFhirApiHost("http://fhirtest.uhn.ca/baseDstu3/")
+				.withFhirApiHost("http://localhost:8080/restful-server-example/fhir/")
 				.withFhirDstuVersion(3)
 				.withProfileResourceName("Patient")
 				.withResourceName("Patient")
-				.withFhirSearchQuery("birthdate=1974-12-24")
+				.withFhirSearchQuery("gender=M")
 				.withI2b2SetType("patientSet")
 				.build();
 		prf.collectResult();
@@ -56,52 +77,59 @@ public class ProfiledFhirResourceTest extends TestCase {
 		logger.info(String.format("[Patient] %s", prf.toCsv()));
 		I2b2SetList a = prf.getI2b2SetList();
 		for( I2b2Set t : a){
-			logger.error(t.getPatientUri());
+			logger.info(t.getPatientUri());
 			
 		}
+	
+
+		long endTime = System.nanoTime();
+
+		long duration = (endTime - startTime)/1000000;  //divide by 1000000 to get milliseconds.
+		logger.error(String.format("Fetched %s entries in %d ms ", prf.getEntriesNumber(), duration));
+		
 	}
 	
-	public void testEncounter() throws UnirestException, FileNotFoundException, IOException {
-		Date date = null;
-		DateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-		try {
-		   date =  formatter.parse("2014-05-28 11:22:37");
-		} catch (ParseException e) {
-		  e.printStackTrace();
-		}
-		FhirProfiledResource prf = new FhirProfiledResourceBuilder()
-				.withFhirApiHost("http://fhirtest.uhn.ca/baseDstu3/")
-				.withFhirDstuVersion(3)
-				.withProfileResourceName("Encounter")
-				.withResourceName("Encounter")
-			    .withFhirSearchQuery("status=finished")
-				.withHappensBeforeDate(date)
-				.withHappensAfterDate(date)
-				.withI2b2SetType("encounterSet")
-				.build();
-		prf.collectResult();
-
-		logger.info(String.format("[Encounter] %s", prf.toCsv()));
-		for( I2b2Set encSet : prf.getI2b2SetList()){
-            System.out.println(encSet.getPatientUri());
-            System.out.println(encSet.getEncounterUri());
-
-    }
-
-	}
+//	public void testEncounter() throws UnirestException, FileNotFoundException, IOException {
+//		Date date = null;
+//		DateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+//		try {
+//		   date =  formatter.parse("2014-05-28 11:22:37");
+//		} catch (ParseException e) {
+//		  e.printStackTrace();
+//		}
+//		FhirProfiledResource prf = new FhirProfiledResourceBuilder()
+//				.withFhirApiHost("http://fhirtest.uhn.ca/baseDstu3/")
+//				.withFhirDstuVersion(3)
+//				.withProfileResourceName("Encounter")
+//				.withResourceName("Encounter")
+//			    .withFhirSearchQuery("status=finished")
+//				.withHappensBeforeDate(date)
+//				.withHappensAfterDate(date)
+//				.withI2b2SetType("encounterSet")
+//				.build();
+//		prf.collectResult();
+//
+//		logger.info(String.format("[Encounter] %s", prf.toCsv()));
+//		for( I2b2Set encSet : prf.getI2b2SetList()){
+//            System.out.println(encSet.getPatientUri());
+//            System.out.println(encSet.getEncounterUri());
+//
+//    }
+//
+//	}
 	
-	public void testObservation() throws UnirestException, FileNotFoundException, IOException {
-		FhirProfiledResource prf = new FhirProfiledResourceBuilder()
-				.withFhirApiHost("http://fhirtest.uhn.ca/baseDstu3/")
-				.withFhirDstuVersion(3)
-				//.withFhirProxyHost("xxx")
-				//.withFhirProxyPort(9090)
-				//.withProfileResourceName("Observation")
-				.withResourceName("Observation")
-				.withFhirSearchQuery("code=29463-7&value-quantity=21")
-				.withI2b2SetType("dateSet") .build();
-		prf.collectResult();
-
-		logger.error(String.format("[Observation] %s", prf.toCsv()));
-	}
+//	public void testObservation() throws UnirestException, FileNotFoundException, IOException {
+//		FhirProfiledResource prf = new FhirProfiledResourceBuilder()
+//				.withFhirApiHost("http://fhirtest.uhn.ca/baseDstu3/")
+//				.withFhirDstuVersion(3)
+//				//.withFhirProxyHost("xxx")
+//				//.withFhirProxyPort(9090)
+//				//.withProfileResourceName("Observation")
+//				.withResourceName("Observation")
+//				.withFhirSearchQuery("code=29463-7&value-quantity=21")
+//				.withI2b2SetType("dateSet") .build();
+//		prf.collectResult();
+//
+//		logger.error(String.format("[Observation] %s", prf.toCsv()));
+//	}
 }
