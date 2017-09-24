@@ -2,6 +2,7 @@ package fr.aphp.wind.fhir;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Date;
 import java.text.DateFormat;
 import java.text.ParseException;
@@ -61,23 +62,25 @@ public class ProfiledFhirResourceTest extends TestCase {
 //		}
 //	}
 	public void testPatient() throws UnirestException, FileNotFoundException, IOException {
-		
+
 		long startTime = System.nanoTime();
 
 		FhirProfiledResource prf = new FhirProfiledResourceBuilder()
-				.withFhirApiHost("http://localhost:8080/restful-server-example/fhir/")
+				//.withFhirApiHost("http://localhost:8080/restful-server-example/fhir/")
+				.withFhirApiHost("http://fhirtest.uhn.ca/baseDstu3/")
 				.withFhirDstuVersion(3)
 				.withProfileResourceName("Patient")
 				.withResourceName("Patient")
+				.withFhirApiPagination(300000)
 				.withFhirSearchQuery("gender=M")
 				.withI2b2SetType("patientSet")
 				.build();
 		prf.collectResult();
 
-		logger.info(String.format("[Patient] %s", prf.toCsv()));
-		I2b2SetList a = prf.getI2b2SetList();
-		for( I2b2Set t : a){
-			logger.info(t.getPatientUri());
+//		logger.info(String.format("[Patient] %s", prf.toCsv()));
+		
+		for( I2b2Set t : prf.getI2b2SetList()){
+			t.getPatientUri();
 			
 		}
 	

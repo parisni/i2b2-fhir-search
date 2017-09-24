@@ -28,6 +28,7 @@ import fr.aphp.wind.i2b2fhir.*
 
 FhirProfiledResource prf = new FhirProfiledResourceBuilder()
 .withFhirApiHost("http://fhirtest.uhn.ca/baseDstu3/")//Required ; from i2b2 hive configuration?
+.withFhirTerminologyHost("http://fhirtest.uhn.ca/baseDstu3/") // Optionnal
 .withFhirDstuVersion(3)//Optionnal, 3 is default
 .withFhirProxyHost("my.proxy")//Optionnal
 .withFhirProxyPort(myport)//Optionnal
@@ -35,8 +36,9 @@ FhirProfiledResource prf = new FhirProfiledResourceBuilder()
 .withHappensBeforeDate(java.util.Date) // Optionnal; filter based on date
 .withHappensAfterDate(java.util.Date) // Optionnal; filter based on date
 .withProfileResourceName("ObservationAphp")//Optionnal - if using a profiled resource
-.withFhirSearchQuery("code=29463-7&value-quantity=21")//OPTIONNAL
 .withI2b2SetType("dateSet")//one of [patientSet, encounterSet, instanceSet, dateSet]
+.withCodes(new ArrayList<String>() {{ add("http://loinc.org|1234-5"); add("http://loinc.org|5432-1"); }})//Optionnal: filter based on codes
+.withFhirSearchQuery("value-quantity=21")//Optionnal; adds some filter information : active, status....
 .build();
 prf.collectResult();
 

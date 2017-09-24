@@ -2,6 +2,7 @@ package fr.aphp.wind.i2b2fhir.resource;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Date;
 
 import org.apache.http.HttpHost;
@@ -42,6 +43,16 @@ public class FhirProfiledResource {
 	private Integer fhirDstuVersion;
 	private Date happensBeforeDate;
 	private Date happensAfterDate;
+	private String  fhirTerminologyHost;
+	private ArrayList<String> codes;
+
+	public String getFhirTerminologyHost() {
+		return fhirTerminologyHost;
+	}
+
+	public void setFhirTerminologyHost(String fhirTerminologyHost) {
+		this.fhirTerminologyHost = fhirTerminologyHost;
+	}
 
 	public boolean isHasProxy() {
 		return hasProxy;
@@ -142,6 +153,14 @@ public class FhirProfiledResource {
 	public void setHappensAfterDate(Date happensAfterDate) {
 		this.happensAfterDate = happensAfterDate;
 	}
+	
+	public ArrayList<String> getCodes() {
+		return codes;
+	}
+
+	public void setCodes(ArrayList<String> codes) {
+		this.codes = codes;
+	}
 
 	private String createFhirSearchQuery() {
 		String tmp = "";
@@ -163,6 +182,7 @@ public class FhirProfiledResource {
 		}
 		return tmp;
 	}
+	
 
 	private String getElementQuery() {
 		String str = "_elements=";
@@ -191,26 +211,86 @@ public class FhirProfiledResource {
 		return str;
 	}
 
-	public void collectResult() throws UnirestException {
-		configFhirPath();
+
+	private ArrayList<String> getCodesExpanded() {
+		ArrayList<String> tmp = new ArrayList<String>();
+		for (String str : this.codes) {
+			tmp.add(str); // we keep the original code
+			tmp.addAll(getEquivalentCode()); //add all expanded equivalent
+		}
+		return tmp;
+	}
+
+	private ArrayList<String> getEquivalentCode() {
+		ArrayList<String> tmp = new ArrayList<String>();
+		//TODO: Make a call to ConceptMapping resource
+		//getHttpCallAsString(query)
+		return tmp;
+
+	}
+	
+	private String createFhirCodeSearchQuery() {
+		String tmp="";
+		if(this.codes!=null){
+			tmp+= String.format("&code=%s", String.join(",", this.codes));
+		}
+		return tmp;
+	}
+	
+	private String getHttpCallAsString(String query){
+		logger.error(query);
+		String tmp = "";
 		if (this.hasProxy) {
 			Unirest.setProxy(new HttpHost(this.fhirProxyHost, this.fhirProxyPort));
 		}
+		try {
+			tmp = Unirest.get(query)
+			.header("accept", "application/json")
+			.header("Content-Type", "application/json")
+			.asString()
+			.getBody()
+			.toString();
+			logger.error(tmp);
+		} catch (UnirestException e) {
+			logger.error(String.format("Query \"%s\" has failed: %s",query, e.getMessage() ));
+			e.printStackTrace();
+
+		}
+		return tmp;
+		
+	}
+	
+	public void collectResult() throws UnirestException {
+		configFhirPath();
+	
 		boolean hasResult = true;
 
 		String query = this.fhirApiHost + this.profileResourceName + "?" 
 		+ this.getElementQuery() 
 		+ this.createFhirSearchQuery()
+		+ this.createFhirCodeSearchQuery()
 		+ this.createDateFilterString() 
-		+ "&_count=" + this.fhirApiPagination + "&_pretty=false";
+		+ "&_count=" + this.fhirApiPagination 
+		+ "&_pretty=false";
+		
+		long startTime = System.nanoTime();
+		long endTime ;
+		long duration ;
+		
 		while (hasResult) {
 			logger.info(String.format("FHIR query: %s", query));
+			
 
-			String jsonResultString = Unirest.get(query).header("accept", "application/json").header("Content-Type", "application/json").asString().getBody().toString();
+			String jsonResultString = getHttpCallAsString(query);
+
+			endTime = System.nanoTime();
+			duration = (endTime - startTime)/1000000; //divide by 1000000 to get milliseconds
+			logger.error(String.format("got the string %d", duration));
+			
+			try{
 			JSONArray entries = JsonPath.read(jsonResultString, "$.entry");
 			for (Object entry : entries) {
 				entriesNumber++;
-
 				if (this.i2b2SetType.equals("patientSet")) {
 					i2b2SetList.addResult(collectPatientList(entry));
 				} else if (this.i2b2SetType.equals("encounterSet")) {
@@ -221,12 +301,23 @@ public class FhirProfiledResource {
 					i2b2SetList.addResult(collectDateList(entry));
 				}
 			}
+			}catch(Exception e){
+				logger.info("no entries in the result");
+			}
+			
+
 			query = getNextPagination(jsonResultString);
 			if (query == null) {
 				hasResult = false;
 			}
+			
 		}
+		endTime = System.nanoTime();
+		duration = (endTime - startTime)/1000000; //divide by 1000000 to get milliseconds
+		logger.error(String.format("total fetch %d", duration));
 	}
+
+
 
 	private void configFhirPath() {
 
